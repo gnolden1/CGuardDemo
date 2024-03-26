@@ -1,0 +1,47 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Map";
+
+    DateTime earliest;
+    DateTime latest;
+    (earliest, latest) = GeoJsonController.GetEarliestAndLatest();
+    Timesery[] timeseries = GeoJsonController.GetZoneTimeseries(earliest, latest);
+}
+
+<link rel="stylesheet" href="~/css/leaflet.css" />
+<script src="~/js/leaflet.js"></script>
+<script src="~/js/mapController.js"></script>
+
+<div class="text-center">
+    <h1 class="display-4">CGuard Demo</h1>
+</div>
+
+<h4 id="sliderData"></h4>
+<div class="sliderContainer">
+    <input type="range" min="0" max="@(timeseries.Length - 1)" value="@(timeseries.Length/2)" class="slider" id="timeseriesSlider" />
+</div>
+
+<div id="map"></div>
+
+<script>
+    initializeMap();
+
+    var timestamps = [];
+    var zones = [];
+    @for (int i = 0; i < timeseries.Length; i++)
+    {
+        @:timestamps[@i] = "@timeseries[i].timestamp";
+        @:zones[@i] = "@timeseries[i].geojson";
+    }
+
+    var slider = document.getElementById("timeseriesSlider");
+    var output = document.getElementById("sliderData");
+    output.innerHTML = timestamps[slider.value];
+    addGeoJsonToMap(zones[slider.value], false);
+
+    slider.oninput = function () {
+        output.innerHTML = timestamps[this.value];
+        addGeoJsonToMap(zones[this.value], false);
+    }
+</script>
