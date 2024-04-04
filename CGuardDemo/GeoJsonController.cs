@@ -2,7 +2,9 @@
 
 namespace CGuardDemo {
     public class GeoJsonController {
-        // REWRITE LATER
+        private static readonly HttpClient _client = new();
+
+        // DELETE LATER
         public static (DateTime, DateTime) GetEarliestAndLatest()
         {
             ZonesDeserializable? allZones = ReadZones();
@@ -16,7 +18,19 @@ namespace CGuardDemo {
             return (earliest, latest);
         }
 
-        // REWRITE LATER
+        // FIX!!!
+        public static async Task<(DateTime, DateTime)> GetEarliestAndLatestAsync(CancellationToken cancellationToken)
+        {
+            // FIX THIS
+            StringContent content = new("");
+            using HttpResponseMessage response = await _client.PostAsync("http://localhost/:8080", content, cancellationToken);
+            string body = await response.Content.ReadAsStringAsync(cancellationToken);
+            string[] earliestLatest = body.Split(';');
+            return (DateTime.Parse(earliestLatest[0]), DateTime.Parse(earliestLatest[1]));
+            // Check for errors
+        }
+
+        // DELETE LATER
         public static Timesery[] GetZoneTimeseries(DateTime earliest, DateTime latest/*, TimeSpan offset*/)
         {
             ZonesDeserializable? allZones = ReadZones();
@@ -31,6 +45,12 @@ namespace CGuardDemo {
             }
 
             return relevantZones.ToArray();
+        }
+
+        // FIX!!!
+        public static async Task<Timesery[]> GetZoneTimeseries(DateTime earliest, DateTime latest, TimeSpan offset)
+        {
+            throw new NotImplementedException();
         }
 
         // DELETE LATER
