@@ -22,8 +22,8 @@ namespace CGuardDemo {
         public static async Task<(DateTime, DateTime)> GetEarliestAndLatestAsync(CancellationToken cancellationToken)
         {
             // FIX THIS
-            StringContent content = new("");
-            using HttpResponseMessage response = await _client.PostAsync("http://localhost/:8080", content, cancellationToken);
+            StringContent content = new("INITIAL");
+            using HttpResponseMessage response = await _client.PostAsync("http://localhost:8080/", content, cancellationToken);
             string body = await response.Content.ReadAsStringAsync(cancellationToken);
             string[] earliestLatest = body.Split(';');
             return (DateTime.Parse(earliestLatest[0]), DateTime.Parse(earliestLatest[1]));
@@ -48,9 +48,17 @@ namespace CGuardDemo {
         }
 
         // FIX!!!
-        public static async Task<Timesery[]> GetZoneTimeseries(DateTime earliest, DateTime latest, TimeSpan offset)
+        public static async Task<Timesery[]> GetZoneTimeseriesAsync(DateTime earliest, DateTime latest, TimeSpan offset, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            StringContent content = new($"{earliest};{latest};{offset}");
+            using HttpResponseMessage response = await _client.PostAsync("http://localhost:8080/", content, cancellationToken);
+            string body = await response.Content.ReadAsStringAsync(cancellationToken);
+            ZonesDeserializable? zones = JsonSerializer.Deserialize<ZonesDeserializable>(body);
+            if (zones == null)
+                throw new Exception("Error reading zones");
+
+            return zones.timeseries;
+            // Check for errors
         }
 
         // DELETE LATER

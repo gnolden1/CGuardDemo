@@ -1,12 +1,16 @@
 ﻿@page
+@using System.Globalization
 @model IndexModel
 @{
     ViewData["Title"] = "Map";
 
     DateTime earliest;
     DateTime latest;
-    (earliest, latest) = GeoJsonController.GetEarliestAndLatest();
-    Timesery[] timeseries = GeoJsonController.GetZoneTimeseries(earliest, latest);
+    CancellationToken cancellationToken = new();
+    (earliest, latest) = await GeoJsonController.GetEarliestAndLatestAsync(cancellationToken);
+    Timesery[] timeseries = await GeoJsonController.GetZoneTimeseriesAsync(earliest + TimeSpan.FromDays(1), earliest + TimeSpan.FromDays(3), TimeSpan.FromMinutes(5), cancellationToken);
+    //(earliest, latest) = GeoJsonController.GetEarliestAndLatest();
+    //Timesery[] timeseries = GeoJsonController.GetZoneTimeseries(earliest, latest);
 }
 
 <link rel="stylesheet" href="~/css/leaflet.css" />
@@ -29,9 +33,10 @@
 
     var timestamps = [];
     var zones = [];
+    
     @for (int i = 0; i < timeseries.Length; i++)
     {
-        @:timestamps[@i] = "@timeseries[i].timestamp";
+        @:timestamps[@i] = "@timeseries[i].timestamp.ToString(CultureInfo.InvariantCulture)";
         @:zones[@i] = "@timeseries[i].geojson";
     }
 
